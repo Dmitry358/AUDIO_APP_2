@@ -13,11 +13,9 @@
             margin: 0;
             font-family: Arial, sans-serif;
         }
-
         h1 {
             margin-bottom: 40px;
         }
-
         #callBtn {
             font-size: 2.5rem; /* увеличиваем текст кнопки */
             padding: 30px 60px; /* увеличиваем размер кнопки */
@@ -28,15 +26,20 @@
             color: white;
             transition: transform 0.2s;
         }
-
         #callBtn:hover {
             transform: scale(1.05);
             background-color: #45a049;
         }
+        .calling {
+          background-color: red !important;
+        }
     </style>
 </head>
 <body>
-<h1>Audio Call</h1>
+<p id="incomingCall" style="display:none; color:red; font-size:1.5rem;">
+    📞 Chiamata in entrata
+</p>
+
 <button id="callBtn">Call</button>
 <audio id="remoteAudio" autoplay></audio>
 
@@ -53,6 +56,13 @@
 
     ws.onmessage = async (event) => {
       const data = JSON.parse(event.data);
+
+      // 📞 chiamata in entrata
+      if (data.type === "incoming-call") {
+        document.getElementById("incomingCall").style.display = "block";
+        return;
+      }
+
       if (data.sdp) {
         await pc.setRemoteDescription(new RTCSessionDescription(data.sdp));
         if (data.sdp.type === "offer") {
@@ -60,10 +70,12 @@
           await pc.setLocalDescription(answer);
           ws.send(JSON.stringify({ sdp: pc.localDescription }));
         }
-      } else if (data.ice) {
+      } 
+      else if (data.ice) {
         try {
           await pc.addIceCandidate(data.ice);
-        } catch (e) {
+        } 
+        catch (e) {
           console.error("Error adding ICE candidate:", e);
         }
       }
@@ -96,6 +108,11 @@
     let localStream;
 
     document.getElementById("callBtn").onclick = async () => {
+      document.getElementById("callBtn").classList.add("calling");
+      
+      // 📢 avvisa gli altri utenti
+      ws.send(JSON.stringify({ type: "incoming-call" }));
+      
       if (!localStream) {
         localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
         localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
