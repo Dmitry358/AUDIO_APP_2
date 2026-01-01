@@ -6,17 +6,20 @@
 </head>
 <body>
 <h1>Audio Call</h1>
-<button id="callBtn">Call nonnnnnnn</button>
+<button id="callBtn">Call</button>
 <audio id="remoteAudio" autoplay></audio>
 
 <script>
     // ------------------------------
-    // 1. WebSocket
+    // 1. Настройка WebSocket для Render
     // ------------------------------
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
     const ws = new WebSocket(`${protocol}//${window.location.host}/ws`);
 
-    ws.onopen = () => console.log("WebSocket connected!");
+    ws.onopen = () => {
+      console.log("WebSocket connected!");
+    };
+
     ws.onmessage = async (event) => {
       const data = JSON.parse(event.data);
       if (data.sdp) {
@@ -27,18 +30,22 @@
           ws.send(JSON.stringify({ sdp: pc.localDescription }));
         }
       } else if (data.ice) {
-        try { await pc.addIceCandidate(data.ice); }
-        catch (e) { console.error(e); }
+        try {
+          await pc.addIceCandidate(data.ice);
+        } catch (e) {
+          console.error("Error adding ICE candidate:", e);
+        }
       }
     };
 
     // ------------------------------
-    // 2. WebRTC
+    // 2. Настройка WebRTC
     // ------------------------------
     const pc = new RTCPeerConnection({
       iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
         {
-          urls: 'turn:openrelay.metered.ca:80',  // можно заменить на свой TURN
+          urls: 'turn:openrelay.metered.ca:80',
           username: 'openrelayproject',
           credential: 'openrelayproject'
         }
@@ -46,7 +53,9 @@
     });
 
     pc.onicecandidate = (event) => {
-      if (event.candidate) ws.send(JSON.stringify({ ice: event.candidate }));
+      if (event.candidate) {
+        ws.send(JSON.stringify({ ice: event.candidate }));
+      }
     };
 
     pc.ontrack = (event) => {
