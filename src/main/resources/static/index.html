@@ -3,6 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <title>Audio Call App</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh; /* вертикальное центрирование */
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        h1 {
+            margin-bottom: 40px;
+        }
+
+        #callBtn {
+            font-size: 2.5rem; /* увеличиваем текст кнопки */
+            padding: 30px 60px; /* увеличиваем размер кнопки */
+            cursor: pointer;
+            border: none;
+            border-radius: 15px;
+            background-color: #4CAF50;
+            color: white;
+            transition: transform 0.2s;
+        }
+
+        #callBtn:hover {
+            transform: scale(1.05);
+            background-color: #45a049;
+        }
+    </style>
 </head>
 <body>
 <h1>Audio Call</h1>
