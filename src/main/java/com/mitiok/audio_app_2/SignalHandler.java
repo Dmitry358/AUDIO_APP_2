@@ -13,23 +13,18 @@ public class SignalHandler extends TextWebSocketHandler {
 
   private final List<WebSocketSession> sessions = new CopyOnWriteArrayList<>();
 
-  private final Map<String, Integer> userNumbers =
-    new ConcurrentHashMap<>();
+  private final Map<String, Integer> userNumbers = new ConcurrentHashMap<>();
 
   private final AtomicInteger counter = new AtomicInteger(0);
 
   @Override
   public void afterConnectionEstablished(WebSocketSession session) throws Exception {
     sessions.add(session);
-    System.out.println("New connection: " + session.getId());
 
     int userNumber = counter.incrementAndGet();
     userNumbers.put(session.getId(), userNumber);
 
-    System.out.println(
-      "NEW USER CONNECTED | sessionId=" + session.getId()
-        + " | userNumber=" + userNumber
-    );
+    System.out.println( "NEW USER " + userNumber + " CONNECTED | sessionId=" + session.getId());
 
     // 📤 invia il numero al browser
     session.sendMessage(new TextMessage(
@@ -61,12 +56,9 @@ public class SignalHandler extends TextWebSocketHandler {
   @Override
   public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
     sessions.remove(session);
-    System.out.println("Connection closed: " + session.getId());
+
+    System.out.println( "USER " + userNumbers.get(session.getId()) + " DISCONNECTED | sessionId=" + session.getId());
 
     userNumbers.remove(session.getId());
-
-    System.out.println(
-      "USER DISCONNECTED | sessionId=" + session.getId()
-    );
   }
 }
