@@ -39,6 +39,10 @@
 <p id="incomingCall" style="display:none; color:red; font-size:1.5rem;">
     📞 Chiamata in entrata
 </p>
+<p id="myNumber" style="font-size:1.3rem; margin-bottom:20px;">
+    Connessione in corso...
+</p>
+
 
 <button id="callBtn">Call</button>
 <audio id="remoteAudio" autoplay></audio>
@@ -56,6 +60,12 @@
 
     ws.onmessage = async (event) => {
       const data = JSON.parse(event.data);
+
+      // 🆔 numero assegnato dal server
+      if (data.type === "your-id") {
+        document.getElementById("myNumber").innerText = "Sei l’utente #" + data.userNumber;
+        return;
+      }
 
       // 📞 chiamata in entrata
       if (data.type === "incoming-call") {
@@ -109,6 +119,9 @@
 
     document.getElementById("callBtn").onclick = async () => {
       document.getElementById("callBtn").classList.add("calling");
+      
+      // 📢 log server: bottone premuto
+      ws.send(JSON.stringify({ type: "call-pressed" }));
       
       // 📢 avvisa gli altri utenti
       ws.send(JSON.stringify({ type: "incoming-call" }));
